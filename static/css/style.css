@@ -263,6 +263,7 @@ code {
     gap: 0.72rem;
     font-weight: 600;
     letter-spacing: -0.02em;
+    min-width: 0;
 }
 
 .nav-category-copy i {
@@ -275,6 +276,10 @@ code {
     align-items: center;
     justify-content: center;
     font-size: 1rem;
+}
+
+.nav-category-copy span {
+    white-space: nowrap;
 }
 
 .nav-category-meta {
