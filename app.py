@@ -1,7 +1,14 @@
 import os
 import threading
 import webbrowser
-from flask import Flask, render_template
+from flask import Flask, jsonify, render_template
+
+from utils.runtime import (
+    get_runtime_label,
+    get_runtime_support_copy,
+    get_visible_tool_categories,
+    is_hosted_runtime,
+)
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 100 * 1024 * 1024  # 100 MB max upload
@@ -93,18 +100,35 @@ TOOL_CATEGORIES = [
 
 @app.context_processor
 def inject_tools():
-    tool_count = sum(len(cat["tools"]) for cat in TOOL_CATEGORIES)
-    category_count = len(TOOL_CATEGORIES)
+    hosted = is_hosted_runtime()
+    visible_categories = get_visible_tool_categories(TOOL_CATEGORIES, hosted=hosted)
+    tool_count = sum(len(cat["tools"]) for cat in visible_categories)
+    category_count = len(visible_categories)
     return {
-        "tool_categories": TOOL_CATEGORIES,
+        "tool_categories": visible_categories,
         "tool_count": tool_count,
         "category_count": category_count,
+        "app_is_hosted": hosted,
+        "runtime_label": get_runtime_label(hosted=hosted),
+        "runtime_support_copy": get_runtime_support_copy(hosted=hosted),
     }
 
 
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/health")
+def health():
+    hosted = is_hosted_runtime()
+    visible_categories = get_visible_tool_categories(TOOL_CATEGORIES, hosted=hosted)
+    return jsonify(
+        status="ok",
+        runtime="railway" if hosted else "local",
+        categories=len(visible_categories),
+        tools=sum(len(cat["tools"]) for cat in visible_categories),
+    )
 
 
 @app.errorhandler(413)
@@ -133,11 +157,12 @@ app.register_blueprint(qr_bp, url_prefix="/qr")
 app.register_blueprint(security_bp, url_prefix="/security")
 
 if __name__ == "__main__":
+    hosted = is_hosted_runtime()
     port = int(os.environ.get("PORT", "5000"))
-    debug = os.environ.get("FLASK_DEBUG", "1") != "0"
-    should_open_browser = os.environ.get("OPEN_BROWSER", "1") == "1"
+    debug = os.environ.get("FLASK_DEBUG", "0" if hosted else "1") != "0"
+    should_open_browser = os.environ.get("OPEN_BROWSER", "1") == "1" and not hosted
 
     if should_open_browser and os.environ.get("WERKZEUG_RUN_MAIN") != "true":
         threading.Timer(1.0, lambda: webbrowser.open(f"http://127.0.0.1:{port}")).start()
 
-    app.run(debug=debug, port=port)
+    app.run(host="0.0.0.0", debug=debug, port=port)

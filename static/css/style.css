@@ -1560,3 +1560,226 @@ textarea {
         flex: 1 1 auto;
     }
 }
+
+/* Simplified shell + hosted mode overrides */
+.page-shell {
+    padding: 20px;
+    gap: 20px;
+}
+
+.sidebar-intro {
+    padding: 1.1rem 1.35rem;
+    background: rgba(255, 249, 241, 0.72);
+}
+
+.sidebar-intro h2 {
+    display: none;
+}
+
+.sidebar-intro p {
+    margin-top: 0.55rem;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    font-size: 0.88rem;
+}
+
+.nav-category {
+    background: rgba(255, 252, 248, 0.88);
+}
+
+.sidebar-footer {
+    padding: 0.1rem 1.35rem 1.25rem;
+}
+
+.sidebar-footer-card {
+    display: none;
+}
+
+.sidebar-footer p {
+    color: var(--ink-faint);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.top-bar {
+    padding: 0.95rem 1.15rem;
+    margin-bottom: 1.25rem;
+    background: rgba(255, 250, 244, 0.88);
+    box-shadow: 0 10px 24px rgba(70, 49, 24, 0.06);
+}
+
+.top-title {
+    font-size: 1.22rem;
+}
+
+.status-pill {
+    padding: 0.58rem 0.84rem;
+    background: rgba(255, 247, 237, 0.9);
+    font-size: 0.8rem;
+}
+
+.top-link {
+    padding: 0.62rem 0.9rem;
+}
+
+.home-hero {
+    grid-template-columns: minmax(0, 1.18fr) minmax(300px, 0.82fr);
+    gap: 1.1rem;
+    margin-bottom: 1.2rem;
+}
+
+.home-hero-copy,
+.home-hero-panel {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    background: linear-gradient(180deg, rgba(255, 250, 244, 0.94) 0%, rgba(252, 246, 238, 0.88) 100%);
+    box-shadow: var(--shadow-soft);
+}
+
+.home-hero-copy {
+    padding: 2rem;
+    background:
+        radial-gradient(circle at top right, rgba(216, 138, 45, 0.10), transparent 34%),
+        linear-gradient(180deg, rgba(255, 250, 244, 0.94) 0%, rgba(252, 246, 238, 0.88) 100%);
+}
+
+.home-hero-copy p {
+    font-size: 0.98rem;
+    line-height: 1.7;
+}
+
+.hero-metrics {
+    gap: 0.8rem;
+    margin-top: 1.5rem;
+}
+
+.metric-card {
+    padding: 0.95rem;
+    border-radius: 16px;
+}
+
+.home-hero-visual,
+.feature-ribbon,
+.home-band {
+    display: none;
+}
+
+.home-hero-panel {
+    padding: 1.4rem;
+}
+
+.hero-quick-list {
+    list-style: none;
+    margin-top: 1rem;
+    display: grid;
+    gap: 0.7rem;
+}
+
+.hero-quick-list li {
+    list-style: none;
+}
+
+.hero-quick-list a {
+    display: block;
+    padding: 1rem 1rem 1.05rem;
+    border-radius: 18px;
+    border: 1px solid rgba(121, 98, 67, 0.12);
+    background: rgba(255, 252, 247, 0.84);
+    transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+}
+
+.hero-quick-list a:hover {
+    transform: translateY(-2px);
+    border-color: rgba(216, 138, 45, 0.26);
+    background: rgba(255, 249, 241, 0.95);
+}
+
+.hero-quick-list strong {
+    display: block;
+    font-size: 1rem;
+    letter-spacing: -0.03em;
+}
+
+.hero-quick-list span {
+    display: block;
+    margin-top: 0.38rem;
+    color: var(--ink-soft);
+    font-size: 0.86rem;
+    line-height: 1.55;
+}
+
+.hero-runtime-note {
+    margin-top: 1rem;
+    color: var(--ink-faint);
+    font-size: 0.84rem;
+    line-height: 1.55;
+}
+
+.directory-header {
+    margin-bottom: 1rem;
+    padding: 0.25rem 0 0.35rem;
+}
+
+.category-section {
+    margin-bottom: 1.35rem;
+}
+
+.tools-grid {
+    gap: 0.9rem;
+}
+
+.tool-card {
+    padding: 1.05rem;
+    border-radius: 20px;
+    background: rgba(255, 250, 244, 0.92);
+    box-shadow: 0 10px 24px rgba(70, 49, 24, 0.06);
+}
+
+.tool-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px rgba(70, 49, 24, 0.09);
+}
+
+.tool-page,
+.client-tool {
+    padding: 1.65rem;
+    background: rgba(255, 250, 244, 0.92);
+    box-shadow: var(--shadow-soft);
+}
+
+.tool-empty-state {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.9rem;
+    padding: 1rem 1.1rem;
+    border-radius: 20px;
+    border: 1px dashed rgba(121, 98, 67, 0.24);
+    background: rgba(255, 252, 247, 0.82);
+}
+
+.tool-empty-state p {
+    color: var(--ink-soft);
+    line-height: 1.6;
+}
+
+@media (max-width: 980px) {
+    .page-shell {
+        padding: 14px;
+    }
+
+    .home-hero {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .tool-page,
+    .client-tool,
+    .home-hero-copy,
+    .home-hero-panel {
+        padding: 1.3rem;
+        border-radius: 24px;
+    }
+}

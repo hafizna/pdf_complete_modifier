@@ -1,6 +1,7 @@
 import io
 import qrcode
 from flask import Blueprint, render_template, request, send_file, jsonify
+from utils.runtime import hosted_tool_error, is_tool_enabled, render_hosted_unavailable_tool
 
 try:
     from pyzbar.pyzbar import decode as pyzbar_decode
@@ -39,6 +40,13 @@ def generate_page():
 
 @bp.route("/read")
 def read_page():
+    if not is_tool_enabled("qr", "read"):
+        return render_hosted_unavailable_tool(
+            "Read QR Code",
+            "Decode QR codes from uploaded images",
+            "qr",
+            "read",
+        )
     return render_template("upload_tool.html",
         title="Read QR Code",
         description="Decode QR codes from uploaded images",
@@ -78,6 +86,8 @@ def generate():
 
 @bp.route("/read", methods=["POST"])
 def read():
+    if not is_tool_enabled("qr", "read"):
+        return hosted_tool_error("qr", "read")
     if not HAS_PYZBAR:
         return jsonify(error="QR reading requires the 'pyzbar' package. Install with: pip install pyzbar"), 400
 

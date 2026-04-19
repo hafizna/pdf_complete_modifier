@@ -1,6 +1,6 @@
 # EveryTools Atelier
 
-A lightweight, self-hosted app that bundles 39 practical utilities into one calmer workspace. Built with Python + Flask, redesigned with a warmer editorial theme, and focused on document, image, and daily household workflows.
+A lightweight app that bundles practical utilities into one calmer workspace. Built with Python + Flask, redesigned into a cleaner atelier-style interface, and focused on document, image, and daily household workflows.
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue)
 ![Flask](https://img.shields.io/badge/Flask-3.x-green)
@@ -134,7 +134,6 @@ The core app works out of the box with the main dependencies. Some features requ
 |---------|---------|-------|
 | `rembg` | Remove Background | Installs ONNX Runtime (~500 MB). The app works without it and shows a helpful message if missing. |
 | `pyzbar` | Read QR Code | Requires the [ZBar](https://github.com/NaturalHistoryMuseum/pyzbar#installation) shared library on your system. |
-| `pdf2docx` | PDF to Word | Pure Python, but conversion quality depends on PDF complexity. |
 | `pytesseract` | Image to Text (OCR), OCR PDF | Requires the [Tesseract](https://github.com/tesseract-ocr/tesseract) binary installed on your system. For non-English OCR, download the matching `*.traineddata` language pack into your Tesseract `tessdata` folder. |
 | `ezdxf` + `matplotlib` | CAD to PDF/Image | Renders DXF drawings. For DWG support, also install the free [ODA File Converter](https://www.opendesign.com/guestfiles/oda_file_converter) and make sure it's on your `PATH`. |
 
@@ -149,6 +148,32 @@ Install the optional extras only when you need those advanced tools:
 ```bash
 pip install -r requirements-optional.txt
 ```
+
+### Railway Deployment
+
+This repo is now prepared for Railway deployment with:
+
+- a production start command in `railway.json`
+- a `/health` endpoint for Railway health checks
+- `gunicorn` included in the default dependencies
+- automatic hiding of system-dependent tools that are better kept in the local install
+
+Hosted Railway mode keeps the tools that run cleanly in a browser-based environment. The Railway version hides:
+
+- `OCR PDF`
+- `CAD to PDF/Image`
+- `Remove Background`
+- `Image to Text (OCR)`
+- `Read QR`
+
+That split keeps the shared version simpler and avoids broken pages caused by missing system binaries like Tesseract, ZBar, or ODA File Converter.
+
+To deploy:
+
+1. Push this repo to GitHub.
+2. In Railway, create a new project from the GitHub repo.
+3. Generate a public domain in the Railway service Networking settings.
+4. Confirm the healthcheck path is `/health` if you want zero-downtime deploy checks in the dashboard.
 
 ### Enabling DWG support (ODA File Converter)
 

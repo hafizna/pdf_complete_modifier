@@ -6,5 +6,7 @@ qrcode[pil]
 reportlab
 img2pdf
 python-docx
+pdf2docx
+gunicorn
 
 # Optional extras live in requirements-optional.txt

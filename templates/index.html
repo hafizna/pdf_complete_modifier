@@ -7,7 +7,7 @@
     <div class="home-hero-copy">
         <span class="eyebrow">Calm Tools For Daily Work</span>
         <h1>Handle <span class="serif-accent">PDF chores, image cleanups, and quick household calculations</span> without the usual clutter.</h1>
-        <p>EveryTools Atelier is a warmer, more focused local workspace for practical admin tasks: watermarking files, preparing images, and solving the little calculations that come up every day.</p>
+        <p>EveryTools Atelier is a warmer, more focused workspace for practical admin tasks: watermarking files, preparing images, and solving the little calculations that come up every day.</p>
         <div class="hero-actions">
             <a href="/pdf/watermark" class="btn btn-primary"><i class="bi bi-water"></i> Open Watermark PDF</a>
             <a href="#tool-directory" class="btn btn-ghost">Browse the tool library</a>
@@ -22,81 +22,46 @@
                 <span>Working sections</span>
             </div>
             <div class="metric-card">
-                <strong>Local</strong>
-                <span>Opens right on your machine</span>
+                <strong>{{ "Shared" if app_is_hosted else "Private" }}</strong>
+                <span>{{ runtime_label }}</span>
             </div>
         </div>
     </div>
 
-    <div class="home-hero-visual">
-        <div class="hero-visual-panel">
-            <div class="visual-card visual-card-main">
-                <span class="eyebrow">Most Useful Right Now</span>
-                <h3>Built around the chores people actually repeat.</h3>
-                <ul class="visual-list">
-                    <li>Watermark PDF with placement, opacity, and tiling</li>
-                    <li>Resize, convert, and clean up images fast</li>
-                    <li>Calculate time differences like <code>1.15 → 6.44</code></li>
-                </ul>
-            </div>
-            <div class="visual-card visual-card-mini">
-                <span class="eyebrow">Popular Flow</span>
-                <strong>Upload → adjust → download</strong>
-                <p>Cleaner pages, warmer interface, fewer distractions.</p>
-            </div>
-            <div class="visual-card visual-card-mini accent">
-                <span class="eyebrow">Local-First</span>
-                <strong>Ready for personal use</strong>
-                <p>Open it locally and keep your document work in one place.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="feature-ribbon">
-    <a href="/pdf/watermark" class="feature-ribbon-card">
-        <span class="feature-kicker">PDF</span>
-        <h3>Document-wide watermarking</h3>
-        <p>Text or image watermarks with angles, layering, page ranges, and tiled layouts.</p>
-    </a>
-    <a href="/image/remove-bg" class="feature-ribbon-card">
-        <span class="feature-kicker">Image</span>
-        <h3>Quick photo cleanup</h3>
-        <p>Resize, crop, convert, or remove backgrounds without leaving the workspace.</p>
-    </a>
-    <a href="/calc/time-difference" class="feature-ribbon-card">
-        <span class="feature-kicker">Calculator</span>
-        <h3>Time difference at a glance</h3>
-        <p>Built for the real shorthand you use every day, like <code>1.15</code> to <code>6.44</code>.</p>
-    </a>
-</section>
-
-<section class="home-band">
-    <div class="home-band-copy">
-        <span class="eyebrow">Why This Version Feels Different</span>
-        <h2>More editorial, less utility-directory.</h2>
-        <p>The interface is intentionally softer and more composed, so the app feels like a personal workspace instead of a copied tool listing.</p>
-    </div>
-    <div class="home-band-stats">
-        <div class="band-stat">
-            <strong>Warm palette</strong>
-            <span>Paper-like neutrals with amber accents</span>
-        </div>
-        <div class="band-stat">
-            <strong>Focused set</strong>
-            <span>Removed unused sections and kept the practical ones</span>
-        </div>
-        <div class="band-stat">
-            <strong>Local launch</strong>
-            <span>Ready to open from your own machine</span>
-        </div>
+    <div class="home-hero-panel">
+        <span class="eyebrow">Quick Start</span>
+        <ul class="hero-quick-list">
+            <li>
+                <a href="/pdf/watermark">
+                    <strong>Watermark PDF</strong>
+                    <span>Document-wide text or image watermarking with layout control.</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ '/image/convert' if app_is_hosted else '/image/remove-bg' }}">
+                    <strong>{{ "Convert Images" if app_is_hosted else "Clean Up Images" }}</strong>
+                    <span>{{ "Resize, crop, convert, and watermark without extra clutter." if app_is_hosted else "Resize, crop, convert, or remove backgrounds in one place." }}</span>
+                </a>
+            </li>
+            <li>
+                <a href="/calc/time-difference">
+                    <strong>Time Difference</strong>
+                    <span>Built for daily shorthand like <code>1.15</code> to <code>6.44</code>.</span>
+                </a>
+            </li>
+        </ul>
+        {% if app_is_hosted %}
+        <p class="hero-runtime-note">The hosted Railway version keeps the tools that work cleanly in a browser-based setup.</p>
+        {% else %}
+        <p class="hero-runtime-note">The local version keeps the full toolset, including features that need extra system packages on your machine.</p>
+        {% endif %}
     </div>
 </section>
 
 <section class="directory-header" id="tool-directory">
     <span class="eyebrow">Tool Directory</span>
     <h2>Browse the full library</h2>
-    <p>Each section is tuned for a real workflow, not just a checklist of generic utilities.</p>
+    <p>Each section is tuned for a real workflow and kept intentionally simple to scan.</p>
 </section>
 
 {% for cat in tool_categories %}

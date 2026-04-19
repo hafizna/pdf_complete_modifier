@@ -35,6 +35,8 @@ except ImportError:
     HAS_EZDXF = False
 
 import shutil
+from utils.runtime import hosted_tool_error, is_tool_enabled, render_hosted_unavailable_tool
+
 ODA_CONVERTER = shutil.which("ODAFileConverter") or shutil.which("oda_file_converter")
 
 bp = Blueprint("convert", __name__)
@@ -113,6 +115,13 @@ OCR_LANGS = [
 
 @bp.route("/ocr-pdf")
 def ocr_pdf_page():
+    if not is_tool_enabled("convert", "ocr-pdf"):
+        return render_hosted_unavailable_tool(
+            "OCR PDF",
+            "Extract text from scanned PDFs or create a searchable PDF with a hidden text layer",
+            "convert",
+            "ocr-pdf",
+        )
     return render_template("upload_tool.html",
         title="OCR PDF",
         description="Extract text from scanned PDFs or create a searchable PDF with a hidden text layer",
@@ -134,6 +143,13 @@ def ocr_pdf_page():
 
 @bp.route("/cad-to-pdf")
 def cad_to_pdf_page():
+    if not is_tool_enabled("convert", "cad-to-pdf"):
+        return render_hosted_unavailable_tool(
+            "CAD to PDF/Image",
+            "Convert DXF drawings to PDF or PNG. DWG is supported when ODA File Converter is installed.",
+            "convert",
+            "cad-to-pdf",
+        )
     if ODA_CONVERTER:
         notes = (
             '<p><i class="bi bi-check-circle-fill" style="color:#2ec4b6"></i> '
@@ -474,6 +490,8 @@ def html_to_pdf():
 
 @bp.route("/ocr-pdf", methods=["POST"])
 def ocr_pdf():
+    if not is_tool_enabled("convert", "ocr-pdf"):
+        return hosted_tool_error("convert", "ocr-pdf")
     if not HAS_TESSERACT:
         return jsonify(error="OCR requires 'pytesseract' and the Tesseract binary. Install: pip install pytesseract, plus Tesseract from https://github.com/tesseract-ocr/tesseract"), 400
 
@@ -530,6 +548,8 @@ def ocr_pdf():
 
 @bp.route("/cad-to-pdf", methods=["POST"])
 def cad_to_pdf():
+    if not is_tool_enabled("convert", "cad-to-pdf"):
+        return hosted_tool_error("convert", "cad-to-pdf")
     if not HAS_EZDXF:
         return jsonify(error="CAD conversion requires 'ezdxf' and 'matplotlib'. Install: pip install ezdxf matplotlib"), 400
 

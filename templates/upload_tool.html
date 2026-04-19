@@ -16,6 +16,12 @@
     </div>
     {% endif %}
 
+    {% if tool_disabled %}
+    <div class="tool-empty-state">
+        <p>This tool is unavailable in the hosted version.</p>
+        <a href="/" class="btn btn-ghost">Back to dashboard</a>
+    </div>
+    {% else %}
     <form id="tool-form" data-endpoint="{{ endpoint }}">
         {% if text_input %}
         <div class="form-group">
@@ -148,5 +154,6 @@
             <span id="error-message"></span>
         </div>
     </div>
+    {% endif %}
 </div>
 {% endblock %}

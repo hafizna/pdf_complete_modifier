@@ -2,6 +2,7 @@ import io
 from flask import Blueprint, render_template, request, send_file, jsonify
 from PIL import Image, ImageDraw, ImageFont
 from PIL.ExifTags import TAGS
+from utils.runtime import hosted_tool_error, is_tool_enabled, render_hosted_unavailable_tool
 
 try:
     from rembg import remove as rembg_remove
@@ -117,6 +118,13 @@ def convert_page():
 
 @bp.route("/remove-bg")
 def remove_bg_page():
+    if not is_tool_enabled("image", "remove-bg"):
+        return render_hosted_unavailable_tool(
+            "Remove Background",
+            "Automatically remove the background from images",
+            "image",
+            "remove-bg",
+        )
     return render_template("upload_tool.html",
         title="Remove Background",
         description="Automatically remove the background from images",
@@ -244,6 +252,13 @@ def animated_page():
 
 @bp.route("/ocr")
 def ocr_page():
+    if not is_tool_enabled("image", "ocr"):
+        return render_hosted_unavailable_tool(
+            "Image to Text (OCR)",
+            "Extract text from images using optical character recognition",
+            "image",
+            "ocr",
+        )
     return render_template("upload_tool.html",
         title="Image to Text (OCR)",
         description="Extract text from images using optical character recognition",
@@ -360,6 +375,8 @@ def convert():
 
 @bp.route("/remove-bg", methods=["POST"])
 def remove_bg():
+    if not is_tool_enabled("image", "remove-bg"):
+        return hosted_tool_error("image", "remove-bg")
     if not HAS_REMBG:
         return jsonify(error="Background removal requires the 'rembg' package. Install with: pip install rembg"), 400
 
@@ -649,6 +666,8 @@ def animated():
 
 @bp.route("/ocr", methods=["POST"])
 def ocr():
+    if not is_tool_enabled("image", "ocr"):
+        return hosted_tool_error("image", "ocr")
     if not HAS_TESSERACT:
         return jsonify(error="OCR requires 'pytesseract' package and Tesseract binary. Install with: pip install pytesseract, then install Tesseract from https://github.com/tesseract-ocr/tesseract"), 400
 
