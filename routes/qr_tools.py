@@ -28,10 +28,10 @@ def generate_page():
             {"type": "number", "name": "border", "label": "Border (modules)", "default": 4, "min": 0, "max": 20},
             {"type": "select", "name": "color", "label": "Color",
              "choices": [
-                 {"value": "black", "label": "Black"},
-                 {"value": "#4361ee", "label": "Blue"},
-                 {"value": "#e63946", "label": "Red"},
-                 {"value": "#2d6a4f", "label": "Green"},
+                 {"value": "black", "label": "Charcoal"},
+                 {"value": "#d88a2d", "label": "Amber"},
+                 {"value": "#b55d3b", "label": "Clay"},
+                 {"value": "#667b5c", "label": "Olive"},
              ]},
         ],
         button_text="Generate QR Code")

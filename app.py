@@ -1,4 +1,6 @@
 import os
+import threading
+import webbrowser
 from flask import Flask, render_template
 
 app = Flask(__name__)
@@ -30,6 +32,7 @@ TOOL_CATEGORIES = [
             {"id": "rotate", "name": "Rotate PDF", "desc": "Rotate PDF pages", "icon": "bi-arrow-clockwise"},
             {"id": "resize", "name": "Resize PDF", "desc": "Change PDF page dimensions", "icon": "bi-aspect-ratio-fill"},
             {"id": "page-numbers", "name": "Page Numbers", "desc": "Add page numbers to PDF", "icon": "bi-123"},
+            {"id": "watermark", "name": "Watermark PDF", "desc": "Add text or image watermarks to a PDF", "icon": "bi-water"},
             {"id": "extract-images", "name": "Extract Images", "desc": "Extract images from PDF", "icon": "bi-images"},
             {"id": "protect", "name": "Protect PDF", "desc": "Add password protection to PDF", "icon": "bi-lock-fill"},
             {"id": "unlock", "name": "Unlock PDF", "desc": "Remove PDF password", "icon": "bi-unlock-fill"},
@@ -54,36 +57,16 @@ TOOL_CATEGORIES = [
         ],
     },
     {
-        "id": "text",
-        "name": "Text & Data",
-        "icon": "bi-braces",
-        "tools": [
-            {"id": "json-formatter", "name": "JSON Formatter", "desc": "Format and validate JSON", "icon": "bi-braces"},
-            {"id": "csv-json", "name": "CSV / JSON", "desc": "Convert between CSV and JSON", "icon": "bi-table"},
-            {"id": "base64", "name": "Base64", "desc": "Encode and decode Base64", "icon": "bi-hash"},
-            {"id": "url-encode", "name": "URL Encode", "desc": "Encode and decode URLs", "icon": "bi-link-45deg"},
-            {"id": "word-counter", "name": "Word Counter", "desc": "Count words, characters, sentences", "icon": "bi-type"},
-            {"id": "markdown", "name": "Markdown Preview", "desc": "Preview Markdown as HTML", "icon": "bi-markdown-fill"},
-            {"id": "case-converter", "name": "Case Converter", "desc": "Convert text between cases", "icon": "bi-type-bold"},
-            {"id": "text-diff", "name": "Text Diff", "desc": "Compare two texts side by side", "icon": "bi-file-diff-fill"},
-            {"id": "regex-tester", "name": "Regex Tester", "desc": "Test regular expressions live", "icon": "bi-search"},
-            {"id": "slug-generator", "name": "Slug Generator", "desc": "Create URL-friendly slugs", "icon": "bi-link"},
-            {"id": "json-yaml", "name": "JSON / YAML", "desc": "Convert between JSON and YAML", "icon": "bi-filetype-yml"},
-            {"id": "lorem-ipsum", "name": "Lorem Ipsum", "desc": "Generate placeholder text", "icon": "bi-text-paragraph"},
-        ],
-    },
-    {
         "id": "calc",
         "name": "Calculators",
         "icon": "bi-calculator-fill",
         "tools": [
             {"id": "calculator", "name": "Calculator", "desc": "Basic and scientific calculator", "icon": "bi-calculator"},
             {"id": "unit-converter", "name": "Unit Converter", "desc": "Convert between units of measurement", "icon": "bi-arrow-left-right"},
-            {"id": "color-converter", "name": "Color Converter", "desc": "Convert HEX, RGB, HSL colors", "icon": "bi-palette-fill"},
             {"id": "percentage", "name": "Percentage Calc", "desc": "Calculate percentages easily", "icon": "bi-percent"},
             {"id": "date", "name": "Date Calculator", "desc": "Calculate date differences", "icon": "bi-calendar-date-fill"},
+            {"id": "time-difference", "name": "Time Difference", "desc": "Calculate hours and minutes between times like 1.15 and 6.44", "icon": "bi-clock-history"},
             {"id": "timestamp", "name": "Timestamp", "desc": "Convert Unix timestamps", "icon": "bi-clock-fill"},
-            {"id": "number-base", "name": "Number Base", "desc": "Convert between number bases", "icon": "bi-123"},
             {"id": "pomodoro", "name": "Pomodoro Timer", "desc": "Focus timer with breaks", "icon": "bi-stopwatch-fill"},
         ],
     },
@@ -110,7 +93,13 @@ TOOL_CATEGORIES = [
 
 @app.context_processor
 def inject_tools():
-    return {"tool_categories": TOOL_CATEGORIES}
+    tool_count = sum(len(cat["tools"]) for cat in TOOL_CATEGORIES)
+    category_count = len(TOOL_CATEGORIES)
+    return {
+        "tool_categories": TOOL_CATEGORIES,
+        "tool_count": tool_count,
+        "category_count": category_count,
+    }
 
 
 @app.route("/")
@@ -132,7 +121,6 @@ def server_error(e):
 from routes.convert_tools import bp as convert_bp
 from routes.pdf_tools import bp as pdf_bp
 from routes.image_tools import bp as image_bp
-from routes.text_tools import bp as text_bp
 from routes.calculator_tools import bp as calc_bp
 from routes.qr_tools import bp as qr_bp
 from routes.security_tools import bp as security_bp
@@ -140,10 +128,16 @@ from routes.security_tools import bp as security_bp
 app.register_blueprint(convert_bp, url_prefix="/convert")
 app.register_blueprint(pdf_bp, url_prefix="/pdf")
 app.register_blueprint(image_bp, url_prefix="/image")
-app.register_blueprint(text_bp, url_prefix="/text")
 app.register_blueprint(calc_bp, url_prefix="/calc")
 app.register_blueprint(qr_bp, url_prefix="/qr")
 app.register_blueprint(security_bp, url_prefix="/security")
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    port = int(os.environ.get("PORT", "5000"))
+    debug = os.environ.get("FLASK_DEBUG", "1") != "0"
+    should_open_browser = os.environ.get("OPEN_BROWSER", "1") == "1"
+
+    if should_open_browser and os.environ.get("WERKZEUG_RUN_MAIN") != "true":
+        threading.Timer(1.0, lambda: webbrowser.open(f"http://127.0.0.1:{port}")).start()
+
+    app.run(debug=debug, port=port)

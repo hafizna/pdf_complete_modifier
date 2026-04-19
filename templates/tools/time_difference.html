@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Time Difference - EveryTools Atelier{% endblock %}
+{% block top_title %}Time Difference{% endblock %}
+
+{% block content %}
+<div class="client-tool">
+    <div class="tool-header">
+        <h1>Time Difference</h1>
+        <p>Calculate the duration between times like 1.15 and 6.44</p>
+    </div>
+
+    <div class="calc-section">
+        <h3>Difference between two times</h3>
+        <div class="inline-form">
+            <div class="form-group">
+                <label for="td-start">Start Time</label>
+                <input type="text" id="td-start" value="1.15" placeholder="e.g. 1.15 or 01:15" oninput="calcTimeDiff()">
+            </div>
+            <div class="form-group">
+                <label for="td-end">End Time</label>
+                <input type="text" id="td-end" value="6.44" placeholder="e.g. 6.44 or 06:44" oninput="calcTimeDiff()">
+            </div>
+            <label class="checkbox-label" style="align-self:flex-end;margin-bottom:.25rem">
+                <input type="checkbox" id="td-next-day" onchange="calcTimeDiff()">
+                <span>End time is next day</span>
+            </label>
+        </div>
+        <div class="form-help">Use either a dot or a colon. Example: <code>1.15</code>, <code>6.44</code>, or <code>06:44</code>.</div>
+
+        <div id="td-result" class="calc-result-inline">5 hours 29 minutes</div>
+        <div id="td-detail" style="font-size:.92rem;color:var(--text-light);margin-top:.35rem"></div>
+    </div>
+
+    <div class="calc-section">
+        <h3>Quick examples</h3>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button class="btn btn-small" type="button" onclick="setExample('1.15', '6.44', false)">1.15 → 6.44</button>
+            <button class="btn btn-small" type="button" onclick="setExample('8.30', '17.15', false)">8.30 → 17.15</button>
+            <button class="btn btn-small" type="button" onclick="setExample('22.10', '3.40', true)">22.10 → 3.40</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function parseTimeInput(value) {
+    const raw = value.trim();
+    if (!raw) return null;
+
+    const normalized = raw.replace(",", ".").replace(":", ".");
+    const parts = normalized.split(".");
+    if (parts.length !== 2) return null;
+
+    const hours = parseInt(parts[0], 10);
+    const minutes = parseInt(parts[1], 10);
+    if (!Number.isInteger(hours) || !Number.isInteger(minutes)) return null;
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+
+    return { hours, minutes, totalMinutes: hours * 60 + minutes };
+}
+
+function formatClock(hours, minutes) {
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+function calcTimeDiff() {
+    const startValue = document.getElementById("td-start").value;
+    const endValue = document.getElementById("td-end").value;
+    const nextDay = document.getElementById("td-next-day").checked;
+    const result = document.getElementById("td-result");
+    const detail = document.getElementById("td-detail");
+
+    const start = parseTimeInput(startValue);
+    const end = parseTimeInput(endValue);
+
+    if (!start || !end) {
+        result.textContent = "Enter valid times";
+        detail.textContent = "Accepted format: 1.15, 01:15, 6.44";
+        return;
+    }
+
+    let diffMinutes = end.totalMinutes - start.totalMinutes;
+    if (nextDay && diffMinutes < 0) diffMinutes += 24 * 60;
+
+    if (!nextDay && diffMinutes < 0) {
+        result.textContent = "End time is earlier than start time";
+        detail.textContent = "Enable “End time is next day” for overnight ranges.";
+        return;
+    }
+
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
+    const decimalHours = (diffMinutes / 60).toFixed(2);
+
+    result.textContent = `${hours} hour${hours === 1 ? "" : "s"} ${minutes} minute${minutes === 1 ? "" : "s"}`;
+    detail.textContent =
+        `${formatClock(start.hours, start.minutes)} to ${formatClock(end.hours, end.minutes)} = ${diffMinutes} minutes (${decimalHours} hours)`;
+}
+
+function setExample(start, end, nextDay) {
+    document.getElementById("td-start").value = start;
+    document.getElementById("td-end").value = end;
+    document.getElementById("td-next-day").checked = nextDay;
+    calcTimeDiff();
+}
+
+calcTimeDiff();
+</script>
+{% endblock %}

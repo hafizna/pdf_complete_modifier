@@ -1,9 +1,22 @@
 import io
 import fitz  # PyMuPDF
 from flask import Blueprint, render_template, request, send_file, jsonify
+from PIL import Image, ImageDraw, ImageFont
 from utils.file_utils import make_zip
 
 bp = Blueprint("pdf", __name__)
+
+try:
+    RESAMPLING = Image.Resampling.BICUBIC
+except AttributeError:
+    RESAMPLING = Image.BICUBIC
+
+WATERMARK_DIRECTION_ANGLES = {
+    "horizontal": 0.0,
+    "diagonal-asc": 45.0,
+    "diagonal-desc": -45.0,
+    "vertical": 90.0,
+}
 
 
 # ── Page Routes ──────────────────────────────────
@@ -122,6 +135,93 @@ def page_numbers_page():
         ])
 
 
+@bp.route("/watermark")
+def watermark_page():
+    return render_template("upload_tool.html",
+        title="Watermark PDF",
+        description="Add a customizable text or image watermark across your PDF pages",
+        notes=(
+            "<p>Add a watermark to the whole document or only selected pages.</p>"
+            "<p>Use text or upload an image, then control placement, opacity, layer, and rotation. "
+            "PNG files with transparency work best for image watermarks.</p>"
+        ),
+        endpoint="/pdf/watermark",
+        accept=".pdf",
+        multiple=False,
+        options=[
+            {"type": "select", "name": "watermark_type", "label": "Watermark Type",
+             "choices": [
+                 {"value": "text", "label": "Text watermark"},
+                 {"value": "image", "label": "Image watermark"},
+             ]},
+            {"type": "textarea", "name": "watermark_text", "label": "Watermark Text",
+             "default": "CONFIDENTIAL", "rows": 3,
+             "placeholder": "Enter the text to repeat across the PDF",
+             "depends_on": {"watermark_type": "text"}},
+            {"type": "color", "name": "text_color", "label": "Text Color",
+             "default": "#9aa0a6",
+             "depends_on": {"watermark_type": "text"}},
+            {"type": "number", "name": "fontsize", "label": "Font Size (pt)",
+             "default": 48, "min": 10, "max": 240,
+             "depends_on": {"watermark_type": "text"}},
+            {"type": "file", "name": "watermark_image", "label": "Watermark Image",
+             "accept": ".png,.jpg,.jpeg,.webp,.bmp",
+             "help": "Transparent PNG is recommended for logos and stamps.",
+             "depends_on": {"watermark_type": "image"}},
+            {"type": "range", "name": "image_scale", "label": "Image Width",
+             "default": 25, "min": 5, "max": 100, "step": 5, "suffix": "% of page width",
+             "depends_on": {"watermark_type": "image"}},
+            {"type": "range", "name": "opacity", "label": "Opacity",
+             "default": 28, "min": 5, "max": 100, "step": 1, "suffix": "%"},
+            {"type": "select", "name": "position", "label": "Placement",
+             "choices": [
+                 {"value": "center", "label": "Center"},
+                 {"value": "top-left", "label": "Top Left"},
+                 {"value": "top-center", "label": "Top Center"},
+                 {"value": "top-right", "label": "Top Right"},
+                 {"value": "center-left", "label": "Center Left"},
+                 {"value": "center-right", "label": "Center Right"},
+                 {"value": "bottom-left", "label": "Bottom Left"},
+                 {"value": "bottom-center", "label": "Bottom Center"},
+                 {"value": "bottom-right", "label": "Bottom Right"},
+                 {"value": "tiled", "label": "Tiled across page"},
+             ]},
+            {"type": "select", "name": "direction", "label": "Direction / Rotation",
+             "choices": [
+                 {"value": "diagonal-desc", "label": "Diagonal (-45°)"},
+                 {"value": "diagonal-asc", "label": "Diagonal (45°)"},
+                 {"value": "horizontal", "label": "Horizontal (0°)"},
+                 {"value": "vertical", "label": "Vertical (90°)"},
+                 {"value": "custom", "label": "Custom angle"},
+             ]},
+            {"type": "number", "name": "custom_angle", "label": "Custom Angle (degrees)",
+             "default": -45, "min": -360, "max": 360, "step": 1,
+             "depends_on": {"direction": "custom"}},
+            {"type": "select", "name": "layer", "label": "Layer",
+             "choices": [
+                 {"value": "under", "label": "Behind page content"},
+                 {"value": "over", "label": "On top of page content"},
+             ]},
+            {"type": "text", "name": "pages", "label": "Pages (leave empty for all pages)",
+             "placeholder": "e.g. 1-3, 5, 8-10"},
+            {"type": "number", "name": "margin_x", "label": "Horizontal Margin (pt)",
+             "default": 36, "min": 0, "max": 500},
+            {"type": "number", "name": "margin_y", "label": "Vertical Margin (pt)",
+             "default": 36, "min": 0, "max": 500},
+            {"type": "number", "name": "offset_x", "label": "Horizontal Offset (pt)",
+             "default": 0, "min": -500, "max": 500},
+            {"type": "number", "name": "offset_y", "label": "Vertical Offset (pt)",
+             "default": 0, "min": -500, "max": 500},
+            {"type": "number", "name": "gap_x", "label": "Tile Gap X (pt)",
+             "default": 120, "min": 0, "max": 1000,
+             "depends_on": {"position": "tiled"}},
+            {"type": "number", "name": "gap_y", "label": "Tile Gap Y (pt)",
+             "default": 90, "min": 0, "max": 1000,
+             "depends_on": {"position": "tiled"}},
+        ],
+        button_text="Apply Watermark")
+
+
 @bp.route("/extract-images")
 def extract_images_page():
     return render_template("upload_tool.html",
@@ -192,6 +292,169 @@ PAPER_SIZES = {
     "a5": (419.53, 595.28),
     "legal": (612, 1008),
 }
+
+
+def _parse_float(value, default):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _parse_int(value, default):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _clamp(value, minimum, maximum):
+    return max(minimum, min(maximum, value))
+
+
+def _hex_to_rgb(value: str) -> tuple[int, int, int]:
+    value = (value or "#9aa0a6").strip().lstrip("#")
+    if len(value) == 3:
+        value = "".join(ch * 2 for ch in value)
+    if len(value) != 6:
+        return (154, 160, 166)
+    try:
+        return tuple(int(value[i:i + 2], 16) for i in (0, 2, 4))
+    except ValueError:
+        return (154, 160, 166)
+
+
+def _load_watermark_font(size: int):
+    for font_name in ("DejaVuSans.ttf", "arial.ttf", "LiberationSans-Regular.ttf"):
+        try:
+            return ImageFont.truetype(font_name, size)
+        except OSError:
+            continue
+    return ImageFont.load_default()
+
+
+def _apply_opacity(image: Image.Image, opacity_pct: float) -> Image.Image:
+    image = image.convert("RGBA")
+    alpha = image.getchannel("A")
+    factor = _clamp(opacity_pct, 0, 100) / 100.0
+    alpha = alpha.point(lambda px: int(px * factor))
+    image.putalpha(alpha)
+    return image
+
+
+def _image_to_png_bytes(image: Image.Image) -> bytes:
+    buf = io.BytesIO()
+    image.save(buf, format="PNG")
+    return buf.getvalue()
+
+
+def _build_text_watermark_asset(text: str, fontsize: int, color_hex: str,
+                                opacity: float, angle: float) -> tuple[bytes, float, float]:
+    scale = 4
+    font_px = max(24, int(fontsize * scale))
+    font = _load_watermark_font(font_px)
+    lines = text.splitlines() or [text]
+    text_value = "\n".join(lines)
+    spacing = max(10, font_px // 4)
+
+    probe = Image.new("RGBA", (8, 8), (255, 255, 255, 0))
+    probe_draw = ImageDraw.Draw(probe)
+    bbox = probe_draw.multiline_textbbox((0, 0), text_value, font=font, spacing=spacing, align="center")
+    text_w = max(1, bbox[2] - bbox[0])
+    text_h = max(1, bbox[3] - bbox[1])
+    pad_x = max(20, font_px // 2)
+    pad_y = max(16, font_px // 3)
+
+    base = Image.new("RGBA", (text_w + pad_x * 2, text_h + pad_y * 2), (255, 255, 255, 0))
+    draw = ImageDraw.Draw(base)
+    fill = _hex_to_rgb(color_hex) + (int(255 * (_clamp(opacity, 0, 100) / 100.0)),)
+    draw.multiline_text((pad_x, pad_y), text_value, font=font, fill=fill, spacing=spacing, align="center")
+
+    rotated = base.rotate(angle, expand=True, resample=RESAMPLING)
+    return _image_to_png_bytes(rotated), rotated.width / scale, rotated.height / scale
+
+
+def _build_image_watermark_asset(file_storage, opacity: float, angle: float) -> tuple[bytes, int, int]:
+    try:
+        image = Image.open(io.BytesIO(file_storage.read())).convert("RGBA")
+    except Exception as exc:
+        raise ValueError(f"Could not read watermark image: {exc}") from exc
+
+    image = _apply_opacity(image, opacity)
+    if angle % 360:
+        image = image.rotate(angle, expand=True, resample=RESAMPLING)
+    return _image_to_png_bytes(image), image.width, image.height
+
+
+def _resolve_watermark_angle() -> float:
+    direction = request.form.get("direction", "diagonal-desc")
+    if direction == "custom":
+        return _parse_float(request.form.get("custom_angle", -45), -45.0)
+    return WATERMARK_DIRECTION_ANGLES.get(direction, -45.0)
+
+
+def _resolve_watermark_size(page_rect: fitz.Rect, asset_w: float, asset_h: float,
+                            watermark_type: str, image_scale_pct: float,
+                            margin_x: float, margin_y: float) -> tuple[float, float]:
+    if watermark_type == "image":
+        width = page_rect.width * (_clamp(image_scale_pct, 1, 100) / 100.0)
+        height = width * (asset_h / asset_w)
+    else:
+        width, height = asset_w, asset_h
+
+    max_w = max(24.0, page_rect.width - (margin_x * 2))
+    max_h = max(24.0, page_rect.height - (margin_y * 2))
+    scale = min(max_w / width if width else 1.0, max_h / height if height else 1.0, 1.0)
+    return max(12.0, width * scale), max(12.0, height * scale)
+
+
+def _build_watermark_rects(page_rect: fitz.Rect, item_w: float, item_h: float, position: str,
+                           margin_x: float, margin_y: float, offset_x: float, offset_y: float,
+                           gap_x: float, gap_y: float) -> list[fitz.Rect]:
+    x_left = page_rect.x0 + margin_x + offset_x
+    x_center = page_rect.x0 + ((page_rect.width - item_w) / 2.0) + offset_x
+    x_right = page_rect.x1 - item_w - margin_x + offset_x
+    y_top = page_rect.y0 + margin_y + offset_y
+    y_center = page_rect.y0 + ((page_rect.height - item_h) / 2.0) + offset_y
+    y_bottom = page_rect.y1 - item_h - margin_y + offset_y
+
+    if position != "tiled":
+        anchors = {
+            "top-left": (x_left, y_top),
+            "top-center": (x_center, y_top),
+            "top-right": (x_right, y_top),
+            "center-left": (x_left, y_center),
+            "center": (x_center, y_center),
+            "center-right": (x_right, y_center),
+            "bottom-left": (x_left, y_bottom),
+            "bottom-center": (x_center, y_bottom),
+            "bottom-right": (x_right, y_bottom),
+        }
+        x, y = anchors.get(position, anchors["center"])
+        return [fitz.Rect(x, y, x + item_w, y + item_h)]
+
+    rects = []
+    step_x = max(item_w + gap_x, item_w * 0.75)
+    step_y = max(item_h + gap_y, item_h * 0.75)
+    start_x = page_rect.x0 + margin_x + offset_x - step_x
+    start_y = page_rect.y0 + margin_y + offset_y - step_y
+    limit_x = page_rect.x1 - margin_x + step_x
+    limit_y = page_rect.y1 - margin_y + step_y
+
+    row = 0
+    y = start_y
+    while y < limit_y:
+        stagger = step_x / 2.0 if row % 2 else 0.0
+        x = start_x + stagger
+        while x < limit_x:
+            rect = fitz.Rect(x, y, x + item_w, y + item_h)
+            if rect.intersects(page_rect):
+                rects.append(rect)
+            x += step_x
+        y += step_y
+        row += 1
+
+    return rects
 
 
 @bp.route("/merge", methods=["POST"])
@@ -394,6 +657,84 @@ def page_numbers():
     output.seek(0)
 
     name = files[0].filename.rsplit(".", 1)[0] + "_numbered.pdf"
+    return send_file(output, mimetype="application/pdf",
+                     as_attachment=True, download_name=name)
+
+
+@bp.route("/watermark", methods=["POST"])
+def watermark():
+    files = request.files.getlist("files")
+    if not files or not files[0].filename:
+        return jsonify(error="No PDF uploaded."), 400
+
+    opacity = _clamp(_parse_float(request.form.get("opacity", 28), 28.0), 5.0, 100.0)
+    position = request.form.get("position", "center")
+    margin_x = max(0.0, _parse_float(request.form.get("margin_x", 36), 36.0))
+    margin_y = max(0.0, _parse_float(request.form.get("margin_y", 36), 36.0))
+    offset_x = _parse_float(request.form.get("offset_x", 0), 0.0)
+    offset_y = _parse_float(request.form.get("offset_y", 0), 0.0)
+    gap_x = max(0.0, _parse_float(request.form.get("gap_x", 120), 120.0))
+    gap_y = max(0.0, _parse_float(request.form.get("gap_y", 90), 90.0))
+    overlay = request.form.get("layer", "under") == "over"
+    page_spec = request.form.get("pages", "").strip()
+    watermark_type = request.form.get("watermark_type", "text")
+    angle = _resolve_watermark_angle()
+
+    doc = fitz.open(stream=files[0].read(), filetype="pdf")
+
+    if doc.needs_pass:
+        doc.close()
+        return jsonify(error="This PDF is password protected. Unlock it first, then add a watermark."), 400
+
+    try:
+        pages = parse_page_ranges(page_spec, len(doc))
+    except ValueError:
+        doc.close()
+        return jsonify(error="Invalid page range format."), 400
+
+    if not pages:
+        doc.close()
+        return jsonify(error="No valid pages selected."), 400
+
+    try:
+        if watermark_type == "image":
+            wm_file = request.files.get("watermark_image")
+            if not wm_file or not wm_file.filename:
+                doc.close()
+                return jsonify(error="Please choose an image watermark file."), 400
+            watermark_bytes, asset_w, asset_h = _build_image_watermark_asset(wm_file, opacity, angle)
+            image_scale = _clamp(_parse_float(request.form.get("image_scale", 25), 25.0), 5.0, 100.0)
+        else:
+            text = request.form.get("watermark_text", "").strip()
+            if not text:
+                doc.close()
+                return jsonify(error="Please enter watermark text."), 400
+            fontsize = _clamp(_parse_int(request.form.get("fontsize", 48), 48), 10, 240)
+            color = request.form.get("text_color", "#9aa0a6")
+            watermark_bytes, asset_w, asset_h = _build_text_watermark_asset(text, fontsize, color, opacity, angle)
+            image_scale = 0.0
+    except ValueError as exc:
+        doc.close()
+        return jsonify(error=str(exc)), 400
+
+    image_xref = 0
+    for page_index in pages:
+        page = doc[page_index]
+        item_w, item_h = _resolve_watermark_size(page.rect, asset_w, asset_h,
+                                                 watermark_type, image_scale, margin_x, margin_y)
+        rects = _build_watermark_rects(page.rect, item_w, item_h, position,
+                                       margin_x, margin_y, offset_x, offset_y, gap_x, gap_y)
+        for rect in rects:
+            image_xref = page.insert_image(rect, stream=watermark_bytes,
+                                           xref=image_xref, overlay=overlay,
+                                           keep_proportion=True)
+
+    output = io.BytesIO()
+    doc.save(output, garbage=4, deflate=True)
+    doc.close()
+    output.seek(0)
+
+    name = files[0].filename.rsplit(".", 1)[0] + "_watermarked.pdf"
     return send_file(output, mimetype="application/pdf",
                      as_attachment=True, download_name=name)
 

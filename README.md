@@ -1,6 +1,6 @@
-# Your Everyday Tools
+# EveryTools Atelier
 
-A lightweight, self-hosted web app that bundles 51 everyday utilities into a single interface. Built with Python + Flask, zero JavaScript frameworks, and minimal CSS — no bloat, just tools.
+A lightweight, self-hosted app that bundles 39 practical utilities into one calmer workspace. Built with Python + Flask, redesigned with a warmer editorial theme, and focused on document, image, and daily household workflows.
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue)
 ![Flask](https://img.shields.io/badge/Flask-3.x-green)
@@ -39,6 +39,7 @@ A lightweight, self-hosted web app that bundles 51 everyday utilities into a sin
 | **Rotate PDF** | Rotate all or specific pages (90, 180, 270 degrees) |
 | **Resize PDF** | Scale pages by percentage or fit to standard paper sizes (A3–A5, Letter, Legal) |
 | **Page Numbers** | Add page numbers with configurable position, font size, and start number |
+| **Watermark PDF** | Add text or image watermarks with opacity, rotation, placement, tiling, page ranges, and front/back layering |
 | **Extract Images** | Extract all embedded images from a PDF |
 | **Protect PDF** | Encrypt a PDF with user and owner passwords (AES-256) |
 | **Unlock PDF** | Remove password protection from a PDF |
@@ -58,32 +59,15 @@ A lightweight, self-hosted web app that bundles 51 everyday utilities into a sin
 | **Image to Text (OCR)** | Extract text from images using optical character recognition |
 | **Animated WebP/GIF** | Convert between animated GIF and animated WebP (preserves per-frame timing) |
 
-### Text & Data (client-side, no upload needed)
-| Tool | Description |
-|------|-------------|
-| **JSON Formatter** | Format, validate, and minify JSON |
-| **CSV / JSON** | Convert between CSV and JSON in both directions |
-| **Base64** | Encode and decode Base64 strings |
-| **URL Encode** | Encode and decode URL components |
-| **Word Counter** | Count words, characters, sentences, paragraphs, and estimate reading time |
-| **Markdown Preview** | Live Markdown-to-HTML preview |
-| **Case Converter** | Convert between UPPER, lower, Title, camelCase, snake_case, kebab-case, PascalCase |
-| **Text Diff** | Compare two texts side by side with highlighted additions and deletions |
-| **Regex Tester** | Test regular expressions with live match highlighting and group extraction |
-| **Slug Generator** | Create URL-friendly slugs from any text |
-| **JSON / YAML** | Convert between JSON and YAML formats |
-| **Lorem Ipsum** | Generate placeholder text by paragraphs, sentences, or words |
-
 ### Calculators (client-side)
 | Tool | Description |
 |------|-------------|
 | **Calculator** | Basic + scientific calculator with keyboard support |
 | **Unit Converter** | Length, weight, temperature, area, volume, speed, data, and time |
-| **Color Converter** | Convert between HEX, RGB, and HSL with live preview and color picker |
 | **Percentage Calc** | Four common percentage calculations in one page |
 | **Date Calculator** | Date difference, add/subtract days, day-of-week lookup |
+| **Time Difference** | Calculate the difference between times entered as `1.15`, `6.44`, or `01:15` |
 | **Timestamp Converter** | Convert between Unix timestamps and human-readable dates (local, UTC, ISO 8601) |
-| **Number Base Converter** | Convert between decimal, binary, octal, and hexadecimal |
 | **Pomodoro Timer** | Focus timer with configurable work/break intervals and session tracking |
 
 ### QR Code
@@ -110,8 +94,8 @@ A lightweight, self-hosted web app that bundles 51 everyday utilities into a sin
 
 ```bash
 # Clone the repository
-git clone https://github.com/listyantidewi1/your-everyday-tools
-cd your-everyday-tools
+git clone https://github.com/hafizna/pdf_complete_modifier
+cd pdf_complete_modifier
 
 # Create a virtual environment (recommended)
 python -m venv venv
@@ -130,6 +114,16 @@ python app.py
 
 Open **http://localhost:5000** in your browser.
 
+### Quick Windows Launch
+
+On Windows, you can use the included launcher:
+
+```bat
+run_local.bat
+```
+
+It will create `.venv` if needed, install the default requirements, start the Flask app, and open the site in your browser.
+
 ---
 
 ## Optional Dependencies
@@ -147,7 +141,13 @@ The core app works out of the box with the main dependencies. Some features requ
 If you only need the core tools, install the minimal set:
 
 ```bash
-pip install Flask Pillow PyMuPDF "qrcode[pil]" markdown reportlab img2pdf python-docx
+pip install -r requirements.txt
+```
+
+Install the optional extras only when you need those advanced tools:
+
+```bash
+pip install -r requirements-optional.txt
 ```
 
 ### Enabling DWG support (ODA File Converter)
@@ -187,16 +187,17 @@ DXF files work out of the box once you install `ezdxf` and `matplotlib`. For **D
 ## Project Structure
 
 ```
-your-everyday-tools/
+pdf_complete_modifier/
 ├── app.py                          # Flask app, tool registry, blueprint registration
 ├── requirements.txt
+├── requirements-optional.txt       # Optional extras for OCR, QR reading, CAD, etc.
+├── run_local.bat                   # Windows launcher that installs deps and opens the app
 ├── utils/
 │   └── file_utils.py               # Shared helpers (ZIP creation, file validation)
 ├── routes/
 │   ├── convert_tools.py            # Document conversion endpoints
 │   ├── pdf_tools.py                # PDF manipulation endpoints
 │   ├── image_tools.py              # Image processing endpoints
-│   ├── text_tools.py               # Text & data tool page routes
 │   ├── calculator_tools.py         # Calculator page routes
 │   ├── qr_tools.py                 # QR code endpoints
 │   └── security_tools.py           # Security tool page routes
@@ -207,37 +208,24 @@ your-everyday-tools/
 │   └── tools/                      # Individual client-side tool templates
 │       ├── calculator.html
 │       ├── unit_converter.html
-│       ├── color_converter.html
 │       ├── percentage_calc.html
 │       ├── date_calc.html
+│       ├── time_difference.html
 │       ├── timestamp_converter.html
-│       ├── number_base.html
 │       ├── pomodoro.html
-│       ├── json_formatter.html
-│       ├── csv_json.html
-│       ├── json_yaml.html
-│       ├── base64.html
-│       ├── url_encode.html
-│       ├── word_counter.html
-│       ├── markdown_preview.html
-│       ├── case_converter.html
-│       ├── text_diff.html
-│       ├── regex_tester.html
-│       ├── slug_generator.html
-│       ├── lorem_ipsum.html
 │       ├── password_generator.html
 │       └── hash_generator.html
 └── static/
-    ├── css/style.css               # All styles (~400 lines, no framework)
+    ├── css/style.css               # Atelier theme, layout, forms, cards, and calculators
     └── js/main.js                  # File upload, AJAX, sidebar, shared logic
 ```
 
 ### Architecture Notes
 
 - **One universal template** — `upload_tool.html` powers all 25+ server-side tools. Each route passes title, description, accepted file types, and form options as template variables. No per-tool template duplication.
-- **Client-side tools** (text utilities, calculators, security tools) run entirely in the browser with vanilla JavaScript — zero server round-trips.
+- **Client-side tools** (calculators and security tools) run entirely in the browser with vanilla JavaScript — zero server round-trips.
 - **In-memory processing** — all file operations use `BytesIO`. No temporary files are written to disk.
-- **No CSS framework** — custom CSS with CSS Grid, Flexbox, and CSS custom properties. The only external resource is Bootstrap Icons via CDN (~100 KB) for the icon set.
+- **No CSS framework** — custom CSS with CSS Grid, Flexbox, and CSS custom properties. The interface uses Bootstrap Icons and Google Fonts from CDNs for the visual system.
 - **Graceful degradation** — heavy optional packages (`rembg`, `pyzbar`, `pdf2docx`, `pytesseract`) are checked at import time. If missing, the affected tool shows a clear install instruction instead of crashing.
 
 ---
@@ -269,4 +257,3 @@ On Windows, use `waitress` instead:
 pip install waitress
 waitress-serve --port=8000 app:app
 ```
-

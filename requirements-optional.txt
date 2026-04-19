@@ -1,0 +1,10 @@
+# Optional extras
+# The app can open and run without these packages.
+# Install them only if you need the related advanced tools.
+
+rembg
+pyzbar
+pdf2docx
+pytesseract
+ezdxf
+matplotlib

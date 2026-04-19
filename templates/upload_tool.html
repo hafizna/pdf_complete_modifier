@@ -1,10 +1,11 @@
 {% extends "base.html" %}
-{% block title %}{{ title }} - EveryTools{% endblock %}
+{% block title %}{{ title }} - EveryTools Atelier{% endblock %}
 {% block top_title %}{{ title }}{% endblock %}
 
 {% block content %}
 <div class="tool-page">
     <div class="tool-header">
+        <span class="eyebrow">Workflow Tool</span>
         <h1>{{ title }}</h1>
         <p>{{ description }}</p>
     </div>
@@ -64,9 +65,22 @@
                     value="{{ opt.default|default('') }}"
                     placeholder="{{ opt.placeholder|default('') }}">
 
+                {% elif opt.type == 'textarea' %}
+                <textarea id="opt-{{ opt.name }}" name="{{ opt.name }}"
+                    rows="{{ opt.rows|default(3) }}"
+                    placeholder="{{ opt.placeholder|default('') }}">{{ opt.default|default('') }}</textarea>
+
                 {% elif opt.type == 'password' %}
                 <input type="password" id="opt-{{ opt.name }}" name="{{ opt.name }}"
                     placeholder="{{ opt.placeholder|default('') }}">
+
+                {% elif opt.type == 'file' %}
+                <input type="file" id="opt-{{ opt.name }}" name="{{ opt.name }}"
+                    accept="{{ opt.accept|default('') }}">
+
+                {% elif opt.type == 'color' %}
+                <input type="color" id="opt-{{ opt.name }}" name="{{ opt.name }}"
+                    value="{{ opt.default|default('#ffffff') }}">
 
                 {% elif opt.type == 'checkbox' %}
                 <label class="checkbox-label">
@@ -95,6 +109,10 @@
                     </label>
                     {% endfor %}
                 </div>
+                {% endif %}
+
+                {% if opt.help %}
+                <small class="form-help">{{ opt.help }}</small>
                 {% endif %}
             </div>
             {% endfor %}
