@@ -5,9 +5,9 @@
 {% block content %}
 <section class="home-hero">
     <div class="home-hero-copy">
-        <span class="eyebrow">Calm Tools For Daily Work</span>
-        <h1>Handle <span class="serif-accent">PDF chores, image cleanups, and quick household calculations</span> without the usual clutter.</h1>
-        <p>EveryTools Atelier is a warmer, more focused workspace for practical admin tasks: watermarking files, preparing images, and solving the little calculations that come up every day.</p>
+        <span class="eyebrow">Simple Daily Tools</span>
+        <h1>PDF, image, and <span class="serif-accent">time shortcuts</span> in one place.</h1>
+        <p>Open a tool, finish the task, move on.</p>
         <div class="hero-actions">
             <a href="/pdf/watermark" class="btn btn-primary"><i class="bi bi-water"></i> Open Watermark PDF</a>
             <a href="#tool-directory" class="btn btn-ghost">Browse the tool library</a>
@@ -29,39 +29,33 @@
     </div>
 
     <div class="home-hero-panel">
-        <span class="eyebrow">Quick Start</span>
+        <span class="eyebrow">Shortcuts</span>
         <ul class="hero-quick-list">
             <li>
                 <a href="/pdf/watermark">
                     <strong>Watermark PDF</strong>
-                    <span>Document-wide text or image watermarking with layout control.</span>
+                    <span>Text or image watermarks.</span>
                 </a>
             </li>
             <li>
                 <a href="{{ '/image/convert' if app_is_hosted else '/image/remove-bg' }}">
                     <strong>{{ "Convert Images" if app_is_hosted else "Clean Up Images" }}</strong>
-                    <span>{{ "Resize, crop, convert, and watermark without extra clutter." if app_is_hosted else "Resize, crop, convert, or remove backgrounds in one place." }}</span>
+                    <span>{{ "Resize, crop, convert, and watermark." if app_is_hosted else "Resize, crop, convert, or remove backgrounds." }}</span>
                 </a>
             </li>
             <li>
                 <a href="/calc/time-difference">
                     <strong>Time Difference</strong>
-                    <span>Built for daily shorthand like <code>1.15</code> to <code>6.44</code>.</span>
+                    <span>For times like <code>1.15</code> to <code>6.44</code>.</span>
                 </a>
             </li>
         </ul>
-        {% if app_is_hosted %}
-        <p class="hero-runtime-note">The hosted Railway version keeps the tools that work cleanly in a browser-based setup.</p>
-        {% else %}
-        <p class="hero-runtime-note">The local version keeps the full toolset, including features that need extra system packages on your machine.</p>
-        {% endif %}
     </div>
 </section>
 
 <section class="directory-header" id="tool-directory">
     <span class="eyebrow">Tool Directory</span>
-    <h2>Browse the full library</h2>
-    <p>Each section is tuned for a real workflow and kept intentionally simple to scan.</p>
+    <h2>Browse tools</h2>
 </section>
 
 {% for cat in tool_categories %}
@@ -71,7 +65,6 @@
             <i class="bi {{ cat.icon }}"></i> {{ cat.name }}
             <span class="category-count">{{ cat.tools|length }}</span>
         </div>
-        <p class="category-summary">Practical shortcuts for {{ cat.name|lower }}.</p>
     </div>
     <div class="tools-grid">
         {% for tool in cat.tools %}

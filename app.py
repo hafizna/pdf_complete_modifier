@@ -5,7 +5,6 @@ from flask import Flask, jsonify, render_template
 
 from utils.runtime import (
     get_runtime_label,
-    get_runtime_support_copy,
     get_visible_tool_categories,
     is_hosted_runtime,
 )
@@ -57,10 +56,7 @@ TOOL_CATEGORIES = [
             {"id": "crop", "name": "Crop Image", "desc": "Crop images to specific dimensions", "icon": "bi-crop"},
             {"id": "rotate", "name": "Rotate / Flip", "desc": "Rotate or flip images", "icon": "bi-arrow-repeat"},
             {"id": "watermark", "name": "Add Watermark", "desc": "Add text watermark to images", "icon": "bi-water"},
-            {"id": "exif", "name": "EXIF Viewer", "desc": "View and strip image metadata", "icon": "bi-info-circle-fill"},
-            {"id": "favicon", "name": "Favicon Generator", "desc": "Create .ico favicons from images", "icon": "bi-app-indicator"},
             {"id": "ocr", "name": "Image to Text", "desc": "Extract text from images (OCR)", "icon": "bi-card-text"},
-            {"id": "animated", "name": "Animated WebP/GIF", "desc": "Convert between animated WebP and GIF", "icon": "bi-film"},
         ],
     },
     {
@@ -69,30 +65,9 @@ TOOL_CATEGORIES = [
         "icon": "bi-calculator-fill",
         "tools": [
             {"id": "calculator", "name": "Calculator", "desc": "Basic and scientific calculator", "icon": "bi-calculator"},
-            {"id": "unit-converter", "name": "Unit Converter", "desc": "Convert between units of measurement", "icon": "bi-arrow-left-right"},
-            {"id": "percentage", "name": "Percentage Calc", "desc": "Calculate percentages easily", "icon": "bi-percent"},
             {"id": "date", "name": "Date Calculator", "desc": "Calculate date differences", "icon": "bi-calendar-date-fill"},
             {"id": "time-difference", "name": "Time Difference", "desc": "Calculate hours and minutes between times like 1.15 and 6.44", "icon": "bi-clock-history"},
-            {"id": "timestamp", "name": "Timestamp", "desc": "Convert Unix timestamps", "icon": "bi-clock-fill"},
             {"id": "pomodoro", "name": "Pomodoro Timer", "desc": "Focus timer with breaks", "icon": "bi-stopwatch-fill"},
-        ],
-    },
-    {
-        "id": "qr",
-        "name": "QR Code",
-        "icon": "bi-qr-code",
-        "tools": [
-            {"id": "generate", "name": "Generate QR", "desc": "Create QR codes from text or URLs", "icon": "bi-qr-code"},
-            {"id": "read", "name": "Read QR", "desc": "Decode QR codes from images", "icon": "bi-qr-code-scan"},
-        ],
-    },
-    {
-        "id": "security",
-        "name": "Security",
-        "icon": "bi-shield-lock-fill",
-        "tools": [
-            {"id": "password-generator", "name": "Password Generator", "desc": "Generate strong random passwords", "icon": "bi-key-fill"},
-            {"id": "hash-generator", "name": "Hash Generator", "desc": "Generate MD5, SHA hashes", "icon": "bi-fingerprint"},
         ],
     },
 ]
@@ -110,7 +85,6 @@ def inject_tools():
         "category_count": category_count,
         "app_is_hosted": hosted,
         "runtime_label": get_runtime_label(hosted=hosted),
-        "runtime_support_copy": get_runtime_support_copy(hosted=hosted),
     }
 
 
@@ -146,15 +120,11 @@ from routes.convert_tools import bp as convert_bp
 from routes.pdf_tools import bp as pdf_bp
 from routes.image_tools import bp as image_bp
 from routes.calculator_tools import bp as calc_bp
-from routes.qr_tools import bp as qr_bp
-from routes.security_tools import bp as security_bp
 
 app.register_blueprint(convert_bp, url_prefix="/convert")
 app.register_blueprint(pdf_bp, url_prefix="/pdf")
 app.register_blueprint(image_bp, url_prefix="/image")
 app.register_blueprint(calc_bp, url_prefix="/calc")
-app.register_blueprint(qr_bp, url_prefix="/qr")
-app.register_blueprint(security_bp, url_prefix="/security")
 
 if __name__ == "__main__":
     hosted = is_hosted_runtime()

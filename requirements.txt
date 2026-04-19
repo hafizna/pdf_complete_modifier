@@ -2,7 +2,6 @@
 Flask
 Pillow
 PyMuPDF
-qrcode[pil]
 reportlab
 img2pdf
 python-docx

@@ -20,9 +20,6 @@ HOSTED_DISABLED_TOOLS = {
     ("image", "ocr"): (
         "Image OCR is disabled on Railway because it depends on the Tesseract binary."
     ),
-    ("qr", "read"): (
-        "Read QR is disabled on Railway because it depends on the ZBar shared library."
-    ),
 }
 
 
@@ -66,14 +63,6 @@ def get_runtime_label(hosted=None):
     if hosted is None:
         hosted = is_hosted_runtime()
     return "Hosted on Railway" if hosted else "Runs locally"
-
-
-def get_runtime_support_copy(hosted=None):
-    if hosted is None:
-        hosted = is_hosted_runtime()
-    if hosted:
-        return "Shared version tuned for the tools that run reliably in a hosted browser workflow."
-    return "Private version with the full local toolset, including system-dependent extras."
 
 
 def render_hosted_unavailable_tool(title, description, category_id, tool_id):

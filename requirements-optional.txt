@@ -3,7 +3,6 @@
 # Install them only if you need the related advanced tools.
 
 rembg
-pyzbar
 pytesseract
 ezdxf
 matplotlib
