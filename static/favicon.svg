@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Sejda At Home icon">
+  <defs>
+    <linearGradient id="bg" x1="10" y1="8" x2="54" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f2bc6b"/>
+      <stop offset="1" stop-color="#d97622"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#bg)"/>
+  <path d="M22 15h17l9 9v25H22z" fill="#fff7ed"/>
+  <path d="M39 15v10h9" fill="#f8d9b2"/>
+  <path d="M39 15v10h9" stroke="#cf8f4a" stroke-linejoin="round" stroke-width="2"/>
+  <path d="M32 28l10 8v11H22V36z" fill="#8b4d1d"/>
+  <path d="M27 47V38h10v9" fill="#fff2df"/>
+  <path d="M20 36l12-10 12 10" fill="none" stroke="#8b4d1d" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+  <circle cx="42" cy="46" r="3" fill="#f3b25f"/>
+</svg>

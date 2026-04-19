@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}EveryTools Atelier{% endblock %}</title>
+    <title>{% block title %}Sejda At Home{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <meta name="theme-color" content="#d97622">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -18,8 +20,8 @@
                     <a href="/" class="logo">
                         <span class="logo-mark"><i class="bi bi-sunrise"></i></span>
                         <span class="logo-copy">
-                            <strong>EveryTools Atelier</strong>
-                            <small>PDF, image, and calculator tools</small>
+                            <strong>Sejda At Home</strong>
+                            <small>Personal PDF replacement</small>
                         </span>
                     </a>
                     <button type="button" class="sidebar-close" onclick="closeSidebar()" aria-label="Close menu">
@@ -70,7 +72,7 @@
                 <div class="top-bar-leading">
                     <button class="menu-btn" onclick="openSidebar()" aria-label="Open menu"><i class="bi bi-list"></i></button>
                     <div>
-                        <span class="top-title">{% block top_title %}EveryTools Atelier{% endblock %}</span>
+                        <span class="top-title">{% block top_title %}Sejda At Home{% endblock %}</span>
                     </div>
                 </div>
                 <div class="top-bar-trailing">

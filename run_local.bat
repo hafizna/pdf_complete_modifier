@@ -26,7 +26,7 @@ python -m pip install -r requirements.txt
 if errorlevel 1 goto :fail
 
 if not defined OPEN_BROWSER set OPEN_BROWSER=1
-echo Starting EveryTools Atelier...
+echo Starting Sejda At Home...
 python app.py
 goto :eof
 

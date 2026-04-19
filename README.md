@@ -1,6 +1,6 @@
-# EveryTools Atelier
+# Sejda At Home
 
-A lightweight Flask app with 29 practical tools for PDF work, image edits, and a few everyday calculators.
+A personal Flask toolkit with 29 practical tools for PDF work, image edits, and a few everyday calculators.
 
 ## Included Tools
 
